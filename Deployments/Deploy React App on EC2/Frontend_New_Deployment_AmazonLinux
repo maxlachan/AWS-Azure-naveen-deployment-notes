@@ -1,20 +1,18 @@
 ###############################Steps to deploy frontend application on Amazon Linux###############################
 
-sudo su
-
-yum update -y
+sudo yum update -y
 
 ############# Installation of NodeJs ####################
 
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
-source ~/.bashrc
+sudo source ~/.bashrc
 
 nvm install 22
 
 ############### Installation of GIT #######################
 
-yum install git -y
+sudo yum install git -y
 
 ################## Build and Deploy the Application ##################
 
