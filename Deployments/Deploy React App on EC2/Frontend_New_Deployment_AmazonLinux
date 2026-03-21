@@ -4,11 +4,16 @@ sudo yum update -y
 
 ############# Installation of NodeJs ####################
 
-sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
 
-sudo source ~/.bashrc
+sudo yum install -y nsolid
 
-nvm install 22
+
+#sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+#sudo source ~/.bashrc
+
+#nvm install 22
 
 ############### Installation of GIT #######################
 
