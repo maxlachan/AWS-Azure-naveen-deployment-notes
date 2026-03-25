@@ -1,6 +1,10 @@
-Privilege Escalation = gaining more permissions than you are supposed to have. How to prevent it
+# 🔐 Privilege Escalation & Permission Boundary Enforcement in AWS
 
-# 🔐 AWS Permission Boundary Enforcement (Step-by-Step Guide)
+## 🧠 What is Privilege Escalation?
+
+> **Privilege Escalation = gaining more permissions than you are supposed to have**
+
+---
 
 ## 🎯 Goal
 
@@ -13,22 +17,24 @@ Allow DevOps team to:
 
 ---
 
-# 🧠 Architecture
+## 🧠 Architecture
 
+```
 DevOps User/Group
-↓
+        ↓
 [Policy 1] Allow IAM Actions
 [Policy 2] Enforce Permission Boundary (Deny Rules)
+```
 
 ---
 
-# 🛠️ Step 1: Create Permission Boundary Policy
+## 🛠️ Step 1: Create Permission Boundary Policy
 
 1. Go to **IAM → Policies → Create policy**
 2. Select **JSON**
 3. Paste:
 
-```json id="pb-policy"
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -57,13 +63,13 @@ PermissionBoundary-LimitedAccess
 
 ---
 
-# 🛠️ Step 2: Create DevOps Permission Policy (Allow)
+## 🛠️ Step 2: Create DevOps Permission Policy (Allow)
 
 1. Go to **IAM → Policies → Create policy**
 2. Select **JSON**
 3. Paste:
 
-```json id="devops-allow"
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -95,13 +101,13 @@ DevOps-IAM-Allow
 
 ---
 
-# 🛠️ Step 3: Create Enforcement Policy (Deny Rules)
+## 🛠️ Step 3: Create Enforcement Policy (Deny Rules)
 
 1. Go to **IAM → Policies → Create policy**
 2. Select **JSON**
 3. Paste:
 
-```json id="enforcement-policy"
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -189,7 +195,7 @@ DevOps-Boundary-Enforcement
 
 ---
 
-# 🛠️ Step 4: Create DevOps Group
+## 🛠️ Step 4: Create DevOps Group
 
 1. Go to **IAM → User groups → Create group**
 2. Name:
@@ -200,7 +206,7 @@ DevOps-Team
 
 ---
 
-# 🛠️ Step 5: Attach Policies to Group
+## 🛠️ Step 5: Attach Policies to Group
 
 Attach BOTH:
 
@@ -209,7 +215,7 @@ Attach BOTH:
 
 ---
 
-# 🛠️ Step 6: Add Users to Group
+## 🛠️ Step 6: Add Users to Group
 
 1. Go to **IAM → Users**
 2. Select user
@@ -222,15 +228,15 @@ DevOps-Team
 
 ---
 
-# 🧪 Step 7: Testing
+## 🧪 Step 7: Testing
 
-## ❌ Test 1: Create user WITHOUT boundary
+### ❌ Test 1: Create user WITHOUT boundary
 
 👉 Result: **Denied**
 
 ---
 
-## ✅ Test 2: Create user WITH boundary
+### ✅ Test 2: Create user WITH boundary
 
 Select:
 
@@ -242,44 +248,10 @@ PermissionBoundary-LimitedAccess
 
 ---
 
-## ❌ Test 3: Remove boundary
+### ❌ Test 3: Remove boundary
 
 👉 Result: **Denied**
 
 ---
 
-## ❌ Test 4: Change boundary
-
-👉 Result: **Denied**
-
----
-
-## ❌ Test 5: Attach AdministratorAccess
-
-👉 Result: **Denied**
-
----
-
-# 🧠 Final Result
-
-* DevOps can manage IAM safely ✅
-* All users restricted by boundary ✅
-* No privilege escalation 🔐
-
----
-
-# 🎯 Summary
-
-* Use **2 policies**:
-
-  * Allow policy → grants IAM access
-  * Enforcement policy → enforces boundary
-
-* Attach both to DevOps group
-
----
-
-# 🧠 Key Concept
-
-> Effective Permissions = IAM Policy ∩ Permission Boundary
-> Explicit Deny overrides everything
+### ❌ Test
