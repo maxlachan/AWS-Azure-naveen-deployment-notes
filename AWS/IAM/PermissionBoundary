@@ -1,0 +1,283 @@
+# 🔐 AWS Permission Boundary Enforcement (Step-by-Step Guide)
+
+## 🎯 Goal
+
+Allow DevOps team to:
+
+* ✅ Create IAM users/roles
+* ❌ Prevent privilege escalation
+* ❌ Prevent admin access
+* ❌ Enforce permission boundary usage
+
+---
+
+# 🧠 Architecture
+
+DevOps User/Group
+↓
+[Policy 1] Allow IAM Actions
+[Policy 2] Enforce Permission Boundary (Deny Rules)
+
+---
+
+# 🛠️ Step 1: Create Permission Boundary Policy
+
+1. Go to **IAM → Policies → Create policy**
+2. Select **JSON**
+3. Paste:
+
+```json id="pb-policy"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowLimitedServices",
+      "Effect": "Allow",
+      "Action": [
+        "s3:*",
+        "lambda:*",
+        "logs:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+4. Click **Next**
+5. Name:
+
+```
+PermissionBoundary-LimitedAccess
+```
+
+6. Click **Create policy**
+
+---
+
+# 🛠️ Step 2: Create DevOps Permission Policy (Allow)
+
+1. Go to **IAM → Policies → Create policy**
+2. Select **JSON**
+3. Paste:
+
+```json id="devops-allow"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowIAMManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateUser",
+        "iam:CreateRole",
+        "iam:AttachUserPolicy",
+        "iam:AttachRolePolicy",
+        "iam:PutUserPermissionsBoundary",
+        "iam:PutRolePermissionsBoundary"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+4. Click **Next**
+5. Name:
+
+```
+DevOps-IAM-Allow
+```
+
+6. Click **Create policy**
+
+---
+
+# 🛠️ Step 3: Create Enforcement Policy (Deny Rules)
+
+1. Go to **IAM → Policies → Create policy**
+2. Select **JSON**
+3. Paste:
+
+```json id="enforcement-policy"
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyCreateUserWithoutBoundary",
+      "Effect": "Deny",
+      "Action": "iam:CreateUser",
+      "Resource": "*",
+      "Condition": {
+        "Null": {
+          "iam:PermissionsBoundary": "true"
+        }
+      }
+    },
+    {
+      "Sid": "DenyCreateRoleWithoutBoundary",
+      "Effect": "Deny",
+      "Action": "iam:CreateRole",
+      "Resource": "*",
+      "Condition": {
+        "Null": {
+          "iam:PermissionsBoundary": "true"
+        }
+      }
+    },
+    {
+      "Sid": "DenyRemoveBoundary",
+      "Effect": "Deny",
+      "Action": [
+        "iam:DeleteUserPermissionsBoundary",
+        "iam:DeleteRolePermissionsBoundary"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DenyChangingBoundary",
+      "Effect": "Deny",
+      "Action": [
+        "iam:PutUserPermissionsBoundary",
+        "iam:PutRolePermissionsBoundary"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "iam:PermissionsBoundary": "arn:aws:iam::ACCOUNT_ID:policy/PermissionBoundary-LimitedAccess"
+        }
+      }
+    },
+    {
+      "Sid": "DenyAdminPolicyAttach",
+      "Effect": "Deny",
+      "Action": [
+        "iam:AttachUserPolicy",
+        "iam:AttachRolePolicy"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "iam:PolicyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+        }
+      }
+    }
+  ]
+}
+```
+
+👉 Replace:
+
+```
+ACCOUNT_ID
+```
+
+with your AWS Account ID
+
+---
+
+4. Click **Next**
+5. Name:
+
+```
+DevOps-Boundary-Enforcement
+```
+
+6. Click **Create policy**
+
+---
+
+# 🛠️ Step 4: Create DevOps Group
+
+1. Go to **IAM → User groups → Create group**
+2. Name:
+
+```
+DevOps-Team
+```
+
+---
+
+# 🛠️ Step 5: Attach Policies to Group
+
+Attach BOTH:
+
+* `DevOps-IAM-Allow` ✅
+* `DevOps-Boundary-Enforcement` 🔐
+
+---
+
+# 🛠️ Step 6: Add Users to Group
+
+1. Go to **IAM → Users**
+2. Select user
+3. Click **Add to group**
+4. Choose:
+
+```
+DevOps-Team
+```
+
+---
+
+# 🧪 Step 7: Testing
+
+## ❌ Test 1: Create user WITHOUT boundary
+
+👉 Result: **Denied**
+
+---
+
+## ✅ Test 2: Create user WITH boundary
+
+Select:
+
+```
+PermissionBoundary-LimitedAccess
+```
+
+👉 Result: **Success**
+
+---
+
+## ❌ Test 3: Remove boundary
+
+👉 Result: **Denied**
+
+---
+
+## ❌ Test 4: Change boundary
+
+👉 Result: **Denied**
+
+---
+
+## ❌ Test 5: Attach AdministratorAccess
+
+👉 Result: **Denied**
+
+---
+
+# 🧠 Final Result
+
+* DevOps can manage IAM safely ✅
+* All users restricted by boundary ✅
+* No privilege escalation 🔐
+
+---
+
+# 🎯 Summary
+
+* Use **2 policies**:
+
+  * Allow policy → grants IAM access
+  * Enforcement policy → enforces boundary
+
+* Attach both to DevOps group
+
+---
+
+# 🧠 Key Concept
+
+> Effective Permissions = IAM Policy ∩ Permission Boundary
+> Explicit Deny overrides everything
