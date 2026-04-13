@@ -1,0 +1,12 @@
+{
+    "ImageCriteria": [
+        {
+            "ImageProviders": [
+                "623900187958"
+            ],
+            "ImageIds": [
+                "ami-0e568489dd751b03d"
+            ]
+        }
+    ]
+}
