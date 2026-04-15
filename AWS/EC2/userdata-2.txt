@@ -1,23 +1,37 @@
-Content-Type: multipart/mixed; boundary="//"
-MIME-Version: 1.0
-
---//
-
-#cloud-config
-cloud_final_modules:
-- [scripts-user, always]
-
---//
-Content-Type: text/x-shellscript; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-#!/bin/bash
 # Use this for your user data (script from top to bottom)
-# install httpd (Linux 2 version)
+#!/bin/bash
+
+exec > /var/log/user-data.log 2>&1
+set -x
+
 yum update -y
-yum install -y httpd
-systemctl start httpd
-systemctl enable httpd
-echo "<h1>Hi, this is Naveen Uppala</h1>" > /var/www/html/index.html
-yum install java-17-amazon-corretto-headless -y
+
+# Install Node.js
+curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+yum install -y nodejs
+
+# Install Git
+yum install -y git
+
+# Install PM2
+npm install -g pm2
+
+# Clone repo
+cd /home/ec2-user
+git clone https://github.com/naveen-uppala/frontend.git
+cd frontend || exit
+
+# Install dependencies & build frontend
+npm install
+npm run build
+
+# Move to server
+cp -r build server
+cd server || exit
+
+npm install
+
+# Start app with PM2
+pm2 start index.js
+pm2 save
+pm2 startup
