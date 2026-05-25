@@ -18,7 +18,7 @@ set -euxo pipefail
 yum update -y
 yum upgrade -y
 
-yum install -y git curl acl docker nginx
+yum install -y git acl docker nginx
 
 # Java first
 yum install -y java-17-amazon-corretto-headless
