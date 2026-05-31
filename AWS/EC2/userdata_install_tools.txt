@@ -49,8 +49,12 @@ chmod +x /etc/profile.d/maven.sh
 ###############################################
 # Docker
 ###############################################
-service docker start
+systemctl start docker
 systemctl enable docker
+
+# Wait for Docker daemon to be fully ready
+timeout 30 bash -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+
 usermod -aG docker ec2-user
 setfacl -m user:ec2-user:rw /var/run/docker.sock
 
