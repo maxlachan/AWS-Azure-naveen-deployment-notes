@@ -29,6 +29,15 @@ yum upgrade -y
 yum install -y git acl docker nginx
 
 ###############################################
+# Docker — start early before any downloads
+###############################################
+systemctl start docker
+systemctl enable docker
+timeout 30 bash -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+usermod -aG docker ec2-user
+setfacl -m user:ec2-user:rw /var/run/docker.sock
+
+###############################################
 # Java 17
 ###############################################
 yum install -y java-17-amazon-corretto-headless
@@ -36,7 +45,7 @@ yum install -y java-17-amazon-corretto-headless
 ###############################################
 # Maven
 ###############################################
-MVN_VERSION=3.9.9
+MVN_VERSION=3.9.16
 MVN_URL="https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz"
 mkdir -p /opt/maven
 curl -fsSL "${MVN_URL}" | tar zx --strip-components=1 -C /opt/maven
@@ -45,18 +54,6 @@ export MAVEN_HOME=/opt/maven
 export PATH=/opt/maven/bin:$PATH
 EOF
 chmod +x /etc/profile.d/maven.sh
-
-###############################################
-# Docker
-###############################################
-systemctl start docker
-systemctl enable docker
-
-# Wait for Docker daemon to be fully ready
-timeout 30 bash -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
-
-usermod -aG docker ec2-user
-setfacl -m user:ec2-user:rw /var/run/docker.sock
 
 ###############################################
 # kubectl (latest stable)
