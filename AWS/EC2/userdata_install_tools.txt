@@ -2,10 +2,12 @@ Content-Type: multipart/mixed; boundary="//"
 MIME-Version: 1.0
 
 --//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
 
 #cloud-config
 cloud_final_modules:
-- [scripts-user, always]
+  - [scripts-user, always]
 
 --//
 Content-Type: text/x-shellscript; charset="us-ascii"
@@ -15,47 +17,73 @@ Content-Transfer-Encoding: 7bit
 #!/bin/bash
 set -euxo pipefail
 
+###############################################
+# System Update
+###############################################
 yum update -y
 yum upgrade -y
 
+###############################################
+# Base packages
+###############################################
 yum install -y git acl docker nginx
 
-# Java first
+###############################################
+# Java 17
+###############################################
 yum install -y java-17-amazon-corretto-headless
 
+###############################################
 # Maven
-mvn_version=3.9.15
-url="https://dlcdn.apache.org/maven/maven-3/${mvn_version}/binaries/apache-maven-${mvn_version}-bin.tar.gz"
+###############################################
+MVN_VERSION=3.9.9
+MVN_URL="https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz"
 mkdir -p /opt/maven
-curl -fsSL ${url} | tar zx --strip-components=1 -C /opt/maven
-
-cat << EOF > /etc/profile.d/maven.sh
+curl -fsSL "${MVN_URL}" | tar zx --strip-components=1 -C /opt/maven
+cat > /etc/profile.d/maven.sh << 'EOF'
 export MAVEN_HOME=/opt/maven
-export PATH=/opt/maven/bin:\$PATH
+export PATH=/opt/maven/bin:$PATH
 EOF
+chmod +x /etc/profile.d/maven.sh
 
+###############################################
 # Docker
-systemctl start docker
+###############################################
+service docker start
 systemctl enable docker
 usermod -aG docker ec2-user
+setfacl -m user:ec2-user:rw /var/run/docker.sock
 
-# Kubectl
-curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.7/2022-06-29/bin/linux/amd64/kubectl
+###############################################
+# kubectl (latest stable)
+###############################################
+KUBECTL_VERSION=$(curl -fsSL https://dl.k8s.io/release/stable.txt)
+curl -fsSLO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
 chmod +x kubectl
 mv kubectl /usr/local/bin/
 
-# eksctl
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-mv /tmp/eksctl /usr/local/bin
+###############################################
+# eksctl (latest)
+###############################################
+curl -fsSL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz" | tar xz -C /tmp
+mv /tmp/eksctl /usr/local/bin/
+chmod +x /usr/local/bin/eksctl
 
+###############################################
 # Helm
-curl -sSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+###############################################
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-# NodeJS
-yum install https://rpm.nodesource.com/pub_16.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
-yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+###############################################
+# NodeJS 20 (LTS)
+###############################################
+curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+yum install -y nodejs
 
+###############################################
 # Nginx
+###############################################
 systemctl start nginx
 systemctl enable nginx
+
 --//--
