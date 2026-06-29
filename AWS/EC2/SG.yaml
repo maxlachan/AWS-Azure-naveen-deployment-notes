@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Provision a sample Security group and allow SSH connectivity on EC2 instance
 Parameters:
   TheCloudNationVpcId:
-    Description: 'VPC for creating instance using CFT'
+    Description: 'VPC for creating Security Group using CFT'
     Type: String
     Default: vpc-0ae395ad9b4be7977
 
