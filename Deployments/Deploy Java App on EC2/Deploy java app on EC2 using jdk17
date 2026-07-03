@@ -12,7 +12,9 @@
 
 1) cd /tmp
 
-2) wget https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
+steve#) its for downloading the zip maven package from official maven reposistory -------- https://maven.apache.org/download.cgi
+
+2) wget https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz  ------>  steve#) wget https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
 
 3) sudo tar xf /tmp/apache-maven-*.tar.gz -C /opt
 
