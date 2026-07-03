@@ -18,7 +18,7 @@ steve#) its for downloading the zip maven package from official maven reposistor
 
 3) sudo tar xf /tmp/apache-maven-*.tar.gz -C /opt
 
-4) sudo ln -s /opt/apache-maven-3.9.14 /opt/maven
+4) sudo ln -s /opt/apache-maven-3.9.14 /opt/maven ------ steve#) creating soft link for easy referencing -----sudo ln -s /opt/apache-maven-3.9.16 /opt/maven ----must change according to version of maven downloaded
 
 5) sudo vi /etc/profile.d/maven.sh
 
@@ -27,7 +27,10 @@ steve#) its for downloading the zip maven package from official maven reposistor
          export MAVEN_HOME=/opt/maven
          export PATH=${M2_HOME}/bin:${PATH}
 
-6) sudo chmod +x /etc/profile.d/maven.sh
+steve#) creating a shell script to export and set environment variables for the server ------can view environment variables by using "env" command
+
+6) sudo chmod +x /etc/profile.d/maven.sh   -------- steve#) creating a executable file using chmod +x
+
 
 7) source /etc/profile.d/maven.sh
 
